@@ -16,8 +16,9 @@ class OrdersPage(BasePage):
 
     def wait_for_order_count(self, expected_count: int) -> None:
         self.wait.until(
-            lambda driver: len(driver.find_elements(*self._ORDER_CARDS))
-            == expected_count
+            lambda driver: (
+                len(driver.find_elements(*self._ORDER_CARDS)) == expected_count
+            )
         )
 
     def order_count(self) -> int:
