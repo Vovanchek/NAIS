@@ -23,6 +23,8 @@ def test_category_filter_returns_only_requested_category(api: ApiClient) -> None
 
 @pytest.mark.api
 @pytest.mark.regression
+@pytest.mark.known_defect
+@pytest.mark.xfail(strict=True, reason="TM-DEF-004: catalog search is case-sensitive")
 def test_search_is_case_insensitive_and_trims_query(api: ApiClient) -> None:
     product = next(item for item in all_products(api) if item.stock > 0)
     query = product.name[:4]

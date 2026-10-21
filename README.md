@@ -1,94 +1,149 @@
 # Test Me Automation
 
-Risk-prioritized UI and API automation for the published training shop at `https://test-me.vzl.one/`. The suite uses Python, Selenium 4, pytest, requests, Page Objects, isolated API workspaces, and integer-kopeck assertions. The OpenAPI source is `https://test-me.vzl.one/openapi.json`.
+Risk-based UI and API automation for the published training storefront at `https://test-me.vzl.one/`.
 
-## Requirements
+## Stack
 
-- Python 3.11 or newer
-- Google Chrome (default), Firefox, or Edge
-- Node.js/npm only if using the optional Selenium MCP integration in VS Code
+- Python 3.11+
+- pytest
+- Selenium 4
+- Requests
+- Ruff
+- pytest-xdist for controlled API parallelism
 
-Selenium Manager resolves browser drivers automatically. Tests use synthetic contact values; no real payment is performed.
+## Coverage
 
-## Setup
+The suite prioritizes workspace isolation, catalog contracts, quote calculations in integer kopecks, approved/declined order flows, cancellation, reviews, favorites and the critical browser checkout journey.
 
-PowerShell, without activating the environment (works when script execution is restricted):
+Documentation:
+
+- [Test plan](docs/test-plan.md)
+- [Detailed test cases](docs/test-cases.md)
+- [Automation traceability](docs/traceability.md)
+- [Confirmed defects](docs/defects.md)
+- [Execution report template](docs/execution-report.md)
+
+## Installation
+
+### Windows PowerShell
 
 ```powershell
 py -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -c constraints.txt -e ".[dev]"
 ```
 
-If PowerShell permits activation, the equivalent is:
+### Git Bash
 
-```powershell
-.\.venv\Scripts\Activate.ps1
-python -m pip install -e ".[dev]"
+```bash
+python -m venv .venv
+source .venv/Scripts/activate
+python -m pip install --upgrade pip
+python -m pip install -c constraints.txt -e ".[dev]"
 ```
 
 ## Configuration
 
-`BASE_URL` defaults to the permitted host and rejects other hosts. It may only be overridden to `https://test-me.vzl.one`. Other settings:
+All settings are optional and have safe defaults for the assignment environment.
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `BROWSER` | `chrome` | `chrome`, `firefox`, or `edge` |
-| `HEADLESS` | `true` | Run headless when true |
-| `API_CONNECT_TIMEOUT` | `5` | HTTP connection timeout in seconds |
-| `API_READ_TIMEOUT` | `20` | HTTP response timeout in seconds |
-| `ARTIFACT_DIR` | `artifacts` | UI failure evidence directory |
-
-## Run
-
-```powershell
-.\.venv\Scripts\python.exe -m ruff format --check .
-.\.venv\Scripts\python.exe -m ruff check .
-.\.venv\Scripts\python.exe -m pytest --collect-only -q
-.\.venv\Scripts\python.exe -m pytest -m api -q
-.\.venv\Scripts\python.exe -m pytest -m "ui and smoke" -q
-.\.venv\Scripts\python.exe -m pytest tests\api -q
-.\.venv\Scripts\python.exe -m pytest tests\ui -q
+```text
+BASE_URL=https://test-me.vzl.one
+BROWSER=chrome
+HEADLESS=true
+API_CONNECT_TIMEOUT=5
+API_READ_TIMEOUT=20
+ARTIFACT_DIR=artifacts
 ```
 
-For a visible Firefox run:
+The configuration rejects non-HTTPS URLs, unexpected hosts, credentials in URLs, query strings, fragments and non-root paths.
 
-```powershell
-$env:BROWSER = "firefox"
-$env:HEADLESS = "false"
-.\.venv\Scripts\python.exe -m pytest -m ui -q
+## Quality gates
+
+```bash
+python -m ruff format --check .
+python -m ruff check .
+python -m pytest --collect-only -q
+python -m pytest tests/unit -q
 ```
 
-Optional API parallel run uses separate function-scoped workspaces; keep workers low because the service allows at most 30 workspace creations per minute:
+## Test execution
 
-```powershell
-.\.venv\Scripts\python.exe -m pytest -m api -n 2
+Green API release gate, excluding confirmed product defects:
+
+```bash
+python -m pytest -m "api and not known_defect" -q
 ```
 
-## Artifacts and defects
+Confirmed defect contracts:
 
-On UI failure the fixture saves `screenshot.png`, `page_source.html`, and `failure.txt` under the ignored `artifacts/` directory. Workspace tokens are masked/redacted. Current reproducible findings and evidence references are in [`docs/defects.md`](docs/defects.md); planned and covered scenarios are in [`docs/test-plan.md`](docs/test-plan.md) and [`docs/test-cases.md`](docs/test-cases.md).
-
-The current suite intentionally has regression failures for confirmed application defects. See `Known defects` in `docs/defects.md`; expected assertions have not been weakened to match the broken behavior.
-
-## MCP browser discovery
-
-The VS Code Selenium MCP server is configured in `.vscode/mcp.json`. Start it from the MCP Servers view to inspect the live page, confirm locators, and observe browser/network diagnostics. Network diagnostics may not expose full response bodies; use the API client/tests to verify response contracts.
-
-## GitHub issues through MCP
-
-The same MCP configuration connects to GitHub's hosted issues-only server at `https://api.githubcopilot.com/mcp/x/issues`. It uses VS Code's GitHub OAuth sign-in; no PAT or secret is stored in this repository. Requires VS Code 1.101 or newer and a GitHub account with write permission to `Vovanchek/NAIS`.
-
-After reloading the VS Code window, start the `github` server from the MCP Servers view and authorize GitHub when prompted. The Selenium automation agent can then check for duplicates and create/update repository issues using the English templates in `.github/ISSUE_TEMPLATE/`: `[TEST]` test cases, `[BUG]` defect reports, and `[QA]` automation tasks. This endpoint is scoped to GitHub Issues; it does not enable pushing commits or creating pull requests.
-
-## Publish to GitHub
-
-This workspace is already connected to `origin` (`Vovanchek/NAIS`) on branch `main`. After reviewing the diff, publish the MCP configuration, templates, and documentation updates from PowerShell:
-
-```powershell
-git status
-git add .vscode/mcp.json .github/agents/selenium-python-automation.agent.md .github/ISSUE_TEMPLATE README.md
-git commit -m "Add GitHub Issues MCP integration"
-git push origin main
+```bash
+python -m pytest -m known_defect -q
 ```
 
-GitHub OAuth is not stored in the repository. Confirm no tokens, cookies, or personal data are staged before pushing.
+Critical browser smoke:
+
+```bash
+python -m pytest -m "ui and smoke" -q
+```
+
+All UI tests:
+
+```bash
+python -m pytest -m ui -q
+```
+
+Controlled API parallel run:
+
+```bash
+python -m pytest -m "api and not known_defect" -n 2 --dist loadscope -q
+```
+
+Do not use a large worker count because the public environment enforces write-rate limits.
+
+## Known defects
+
+Confirmed application defects use both:
+
+- `@pytest.mark.known_defect`
+- `@pytest.mark.xfail(strict=True, reason="TM-DEF-...")`
+
+This keeps the normal release gate green while making an unexpected fix produce a strict XPASS that requires review. Full reproduction details and evidence references are in `docs/defects.md`.
+
+## Failure artifacts
+
+On a UI failure, the framework attempts to write the following under a sanitized test-specific directory:
+
+```text
+artifacts/<test-id>/
+├── screenshot.png
+├── page_source.html
+└── failure.txt
+```
+
+Artifact collection is best-effort and cannot replace the original test exception. Workspace tokens and common sensitive values are redacted. `artifacts/` is excluded from Git.
+
+## CI
+
+`.github/workflows/quality-gates.yml` runs formatting, lint, collection, unit tests and the green API release gate. Known-defect checks run separately and do not hide first-attempt results.
+
+UI execution is intentionally not a blocking pull-request job because the public browser environment may be unavailable or rate limited. Run UI smoke locally and record the result in `docs/execution-report.md`.
+
+## Repository hygiene
+
+Before pushing:
+
+```bash
+git status --short
+git ls-files | grep -E '(__pycache__|\.pyc$|\.egg-info)'
+```
+
+The second command must return no tracked generated files. Never commit `.env`, workspace tokens, cookies, browser profiles, screenshots with personal data, or generated reports.
+
+## Publishing changes
+
+```bash
+git switch -c framework-improvements
+git add .
+git commit -m "Improve automation reliability and traceability"
+git push -u origin framework-improvements
+```

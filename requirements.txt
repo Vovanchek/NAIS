@@ -1,5 +1,2 @@
-pytest>=8.0.0
-requests>=2.32.0
-selenium>=4.25.0
-pytest-xdist>=3.6.0
-ruff>=0.9.0
+-c constraints.txt
+-e .[dev]

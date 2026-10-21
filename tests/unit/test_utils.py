@@ -51,3 +51,28 @@ def test_rate_limit_diagnostics_require_retry_after_header() -> None:
     response.headers["Retry-After"] = "30"
     with pytest.raises(AssertionError, match="retry_after='30'"):
         assert_status(response, 201, "Rate-limited request")
+
+
+def test_safe_artifact_name_removes_cross_platform_invalid_characters() -> None:
+    from test_me.utils.artifacts import safe_artifact_name
+
+    value = safe_artifact_name('tests/ui/test_checkout.py::test_case[param:*?"<>|]')
+
+    assert value
+    assert not any(character in value for character in '<>:"/\\|?*')
+
+
+def test_try_capture_returns_default_and_records_diagnostic_failure() -> None:
+    from test_me.utils.artifacts import try_capture
+
+    errors: list[str] = []
+
+    def failing_operation() -> str:
+        raise RuntimeError("browser session is gone")
+
+    result = try_capture("screenshot", failing_operation, errors, "fallback")
+
+    assert result == "fallback"
+    assert errors == [
+        "screenshot capture failed: RuntimeError: browser session is gone"
+    ]

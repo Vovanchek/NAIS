@@ -13,6 +13,8 @@ All findings below were reproduced against `https://test-me.vzl.one/`. Assertion
 - **Evidence:** [Selenium MCP screenshot](evidence/DEF-001-coupon-case.png); API regression `tests/api/test_quote.py::test_welcome_coupon_is_case_and_whitespace_insensitive`; reproduced again in `pytest tests/api/test_quote.py` (6 passed, 2 failed).
 - **Reproducibility:** Reproduced on separate fresh workspaces.
 - **Affected test:** `test_welcome_coupon_is_case_and_whitespace_insensitive`.
+- **GitHub Issue:** Bug #4; primary test case #14.
+- **Automation:** `tests/api/test_quote.py::test_welcome_coupon_is_case_and_whitespace_insensitive`; marker `known_defect`; `xfail(strict=True)`.
 
 ## TM-DEF-002: Free-shipping threshold is not inclusive
 
@@ -25,6 +27,8 @@ All findings below were reproduced against `https://test-me.vzl.one/`. Assertion
 - **Evidence:** [Selenium MCP screenshot](evidence/DEF-002-shipping-threshold.png); API regression `tests/api/test_quote.py::test_standard_shipping_threshold_is_inclusive`; quote suite failure `expected 0, got 8000`.
 - **Reproducibility:** Reproduced with the live seed product at the exact boundary.
 - **Affected test:** `test_standard_shipping_threshold_is_inclusive`.
+- **GitHub Issue:** Bug #1; primary test case #12.
+- **Automation:** `tests/api/test_quote.py::test_standard_shipping_threshold_is_inclusive`; marker `known_defect`; `xfail(strict=True)`.
 
 ## TM-DEF-003: Repeated order cancellation succeeds instead of conflicting
 
@@ -34,9 +38,11 @@ All findings below were reproduced against `https://test-me.vzl.one/`. Assertion
 - **Steps:** POST `/api/orders/{id}/cancel` twice with the same workspace token.
 - **Expected:** First request returns 200 and `cancelled`; second returns 409.
 - **Actual:** Both requests return HTTP 200 and `{"id":"<order-id>","status":"cancelled"}`.
-- **Evidence:** [Selenium MCP screenshot](evidence/DEF-003-repeat-cancel.png) shows the cancelled order. Selenium MCP WebDriver BiDi captured two `POST /api/orders/{id}/cancel` responses, both HTTP 200; the second body was `{"id":"<order-id>","status":"cancelled"}`. API regression: `tests/api/test_orders.py::test_approved_order_lifecycle_and_repeat_cancel_conflict`.
+- **Evidence:** [Selenium MCP screenshot](evidence/DEF-003-repeat-cancel.png) shows the cancelled order. Selenium MCP WebDriver BiDi captured two `POST /api/orders/{id}/cancel` responses, both HTTP 200; the second body was `{"id":"<order-id>","status":"cancelled"}`. API regression: `tests/api/test_orders.py::test_repeated_order_cancellation_returns_conflict`.
 - **Reproducibility:** Reproduced on two separately created orders.
-- **Affected test:** `test_approved_order_lifecycle_and_repeat_cancel_conflict`.
+- **Affected test:** `test_repeated_order_cancellation_returns_conflict`.
+- **GitHub Issue:** Bug #2; primary test case #40.
+- **Automation:** `tests/api/test_orders.py::test_repeated_order_cancellation_returns_conflict`; marker `known_defect`; `xfail(strict=True)`.
 
 ## TM-DEF-004: Catalog search is case-sensitive
 
@@ -49,6 +55,8 @@ All findings below were reproduced against `https://test-me.vzl.one/`. Assertion
 - **Evidence:** [Selenium MCP screenshot](evidence/DEF-004-case-sensitive-search.png) shows query `бЕЗД` and zero results; API regression `tests/api/test_catalog.py::test_search_is_case_insensitive_and_trims_query` reports the mixed-case variant specifically.
 - **Reproducibility:** Reproduced using the live seed product.
 - **Affected test:** `test_search_is_case_insensitive_and_trims_query`.
+- **GitHub Issue:** Bug #3; primary test case #27.
+- **Automation:** `tests/api/test_catalog.py::test_search_is_case_insensitive_and_trims_query`; marker `known_defect`; `xfail(strict=True)`.
 
 ## Verification notes
 

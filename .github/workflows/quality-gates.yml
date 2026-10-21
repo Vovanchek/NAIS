@@ -1,0 +1,54 @@
+name: Quality gates
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-and-unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install project
+        run: python -m pip install -c constraints.txt -e ".[dev]"
+      - name: Check formatting
+        run: python -m ruff format --check .
+      - name: Lint
+        run: python -m ruff check .
+      - name: Collect tests
+        run: python -m pytest --collect-only -q
+      - name: Unit tests
+        run: python -m pytest tests/unit -q
+
+  api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: static-and-unit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install project
+        run: python -m pip install -c constraints.txt -e ".[dev]"
+      - name: Run green API quality gate
+        env:
+          BASE_URL: https://test-me.vzl.one
+        run: python -m pytest -m "api and not known_defect" -q
+      - name: Run known-defect contract checks
+        if: always()
+        continue-on-error: true
+        env:
+          BASE_URL: https://test-me.vzl.one
+        run: python -m pytest -m known_defect -q

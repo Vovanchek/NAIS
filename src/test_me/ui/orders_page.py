@@ -11,6 +11,9 @@ class OrdersPage(BasePage):
     _ORDER_CARDS = (By.CSS_SELECTOR, "#orders-list [data-testid='order-card']")
     _CART_COUNT = (By.ID, "cart-count")
 
+    def wait_until_loaded(self) -> None:
+        self.wait.until(EC.visibility_of_element_located(self._ORDERS_LIST))
+
     def wait_for_order_count(self, expected_count: int) -> None:
         self.wait.until(
             lambda driver: (
@@ -34,7 +37,7 @@ class OrdersPage(BasePage):
         if not details.get_attribute("open"):
             details.find_element(By.CSS_SELECTOR, "summary").click()
         order_id_text = details.find_element(By.CSS_SELECTOR, ".order-id").text
-        match = re.search(r"Повний номер:\s*(\w+)", order_id_text)
+        match = re.search(r"Повний номер:\s*(\S+)", order_id_text)
         if not match:
             raise AssertionError(
                 f"Full order id not found in order details: {order_id_text!r}"
