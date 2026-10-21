@@ -48,7 +48,6 @@ jobs:
         run: python -m pytest -m "api and not known_defect" -q
       - name: Run known-defect contract checks
         if: always()
-        continue-on-error: true
         env:
           BASE_URL: https://test-me.vzl.one
         run: python -m pytest -m known_defect -q
