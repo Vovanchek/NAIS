@@ -74,17 +74,21 @@ The current suite intentionally has regression failures for confirmed applicatio
 
 The VS Code Selenium MCP server is configured in `.vscode/mcp.json`. Start it from the MCP Servers view to inspect the live page, confirm locators, and observe browser/network diagnostics. Network diagnostics may not expose full response bodies; use the API client/tests to verify response contracts.
 
+## GitHub issues through MCP
+
+The same MCP configuration connects to GitHub's hosted issues-only server at `https://api.githubcopilot.com/mcp/x/issues`. It uses VS Code's GitHub OAuth sign-in; no PAT or secret is stored in this repository. Requires VS Code 1.101 or newer and a GitHub account with write permission to `Vovanchek/NAIS`.
+
+After reloading the VS Code window, start the `github` server from the MCP Servers view and authorize GitHub when prompted. The Selenium automation agent can then check for duplicates and create/update repository issues using the English templates in `.github/ISSUE_TEMPLATE/`: `[TEST]` test cases, `[BUG]` defect reports, and `[QA]` automation tasks. This endpoint is scoped to GitHub Issues; it does not enable pushing commits or creating pull requests.
+
 ## Publish to GitHub
 
-Create an empty repository in your GitHub account, then run in PowerShell from the project directory:
+This workspace is already connected to `origin` (`Vovanchek/NAIS`) on branch `main`. After reviewing the diff, publish the MCP configuration, templates, and documentation updates from PowerShell:
 
 ```powershell
-git init
-git add .
-git commit -m "Add Test Me automation framework"
-git branch -M main
-git remote add origin "https://github.com/YOUR-USER/YOUR-REPOSITORY.git"
-git push -u origin main
+git status
+git add .vscode/mcp.json .github/agents/selenium-python-automation.agent.md .github/ISSUE_TEMPLATE README.md
+git commit -m "Add GitHub Issues MCP integration"
+git push origin main
 ```
 
-Review `git status` and ensure no `.venv`, artifacts, tokens, cookies, or real personal data are staged before pushing. The repository has not been published on the user's behalf.
+GitHub OAuth is not stored in the repository. Confirm no tokens, cookies, or personal data are staged before pushing.
