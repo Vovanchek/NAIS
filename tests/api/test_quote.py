@@ -26,6 +26,8 @@ def quote_for(
 
 @pytest.mark.api
 @pytest.mark.regression
+@pytest.mark.known_defect
+@pytest.mark.xfail(strict=True, reason="TM-DEF-001: coupon matching is case-sensitive")
 def test_welcome_coupon_is_case_and_whitespace_insensitive(
     api: ApiClient, available_product: Product
 ) -> None:
@@ -74,9 +76,15 @@ def test_unknown_coupon_is_rejected(api: ApiClient, available_product: Product) 
 
 @pytest.mark.api
 @pytest.mark.regression
+@pytest.mark.known_defect
+@pytest.mark.xfail(
+    strict=True, reason="TM-DEF-002: free-shipping threshold is not inclusive"
+)
 def test_standard_shipping_threshold_is_inclusive(api: ApiClient) -> None:
     catalog = products(api)
-    at_threshold = next((item for item in catalog if item.price == 150_000), None)
+    at_threshold = next(
+        (item for item in catalog if item.stock > 0 and item.price == 150_000), None
+    )
     above_threshold = next(
         (item for item in catalog if item.stock > 0 and item.price > 150_000), None
     )
@@ -85,7 +93,9 @@ def test_standard_shipping_threshold_is_inclusive(api: ApiClient) -> None:
         key=lambda item: item.price,
         default=None,
     )
-    assert at_threshold is not None, "Seed catalog must contain a 150000-cent product"
+    assert at_threshold is not None, (
+        "Seed catalog must contain an in-stock 150000-cent product"
+    )
     assert above_threshold is not None, (
         "Seed catalog must contain an in-stock product above the threshold"
     )

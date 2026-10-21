@@ -73,11 +73,7 @@ def test_checkout_applies_coupon_persists_order_and_clears_cart(
         ui_api.close()
 
     order_page.reload()
-    order_page.wait.until(
-        lambda current: current.find_element("id", "orders-list").find_elements(
-            "css selector", "[data-testid='order-card']"
-        )
-    )
+    order_page.wait_for_order_count(1)
     assert order_page.order_count() == 1
     assert order_page.order_id() == order_id
     assert order_page.cart_count() == "0"
@@ -116,3 +112,47 @@ def test_double_submit_guard_creates_only_one_order(driver, settings) -> None:
         assert len(orders.json()["items"]) == 1, orders.json()
     finally:
         api.close()
+
+
+@pytest.mark.ui
+@pytest.mark.regression
+@pytest.mark.negative
+def test_declined_payment_keeps_cart_and_does_not_create_order(
+    driver, settings
+) -> None:
+    catalog_api = ApiClient(settings)
+    try:
+        products_response = catalog_api.list_products(limit=20)
+        assert_status(products_response, 200, "Get product for declined UI checkout")
+        payload = next(
+            (item for item in products_response.json()["items"] if item["stock"] > 0),
+            None,
+        )
+        assert payload is not None, "Catalog must contain an in-stock product"
+        product = Product.from_payload(payload)
+    finally:
+        catalog_api.close()
+
+    catalog = CatalogPage(driver, settings).load()
+    catalog.add_to_cart(product)
+    catalog.open_cart()
+    cart = CartPage(driver, settings)
+    cart.wait_until_open()
+    cart.fill_contact(
+        "QA Synthetic",
+        "qa.synthetic@example.com",
+        "Test Address 1",
+    )
+    cart.select_payment("declined")
+
+    ui_api = ApiClient(settings, cart.ui_workspace_token())
+    try:
+        error = cart.place_order_and_wait_for_error()
+        assert error.strip(), "Declined payment must display a checkout error"
+
+        orders = ui_api.list_orders()
+        assert_status(orders, 200, "Verify declined UI checkout created no order")
+        assert orders.json()["items"] == []
+        assert product.name in cart.dialog_text()
+    finally:
+        ui_api.close()

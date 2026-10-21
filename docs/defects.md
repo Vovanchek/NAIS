@@ -34,9 +34,9 @@ All findings below were reproduced against `https://test-me.vzl.one/`. Assertion
 - **Steps:** POST `/api/orders/{id}/cancel` twice with the same workspace token.
 - **Expected:** First request returns 200 and `cancelled`; second returns 409.
 - **Actual:** Both requests return HTTP 200 and `{"id":"<order-id>","status":"cancelled"}`.
-- **Evidence:** [Selenium MCP screenshot](evidence/DEF-003-repeat-cancel.png) shows the cancelled order. Selenium MCP WebDriver BiDi captured two `POST /api/orders/{id}/cancel` responses, both HTTP 200; the second body was `{"id":"<order-id>","status":"cancelled"}`. API regression: `tests/api/test_orders.py::test_approved_order_lifecycle_and_repeat_cancel_conflict`.
+- **Evidence:** [Selenium MCP screenshot](evidence/DEF-003-repeat-cancel.png) shows the cancelled order. Selenium MCP WebDriver BiDi captured two `POST /api/orders/{id}/cancel` responses, both HTTP 200; the second body was `{"id":"<order-id>","status":"cancelled"}`. API regression: `tests/api/test_orders.py::test_repeated_order_cancellation_returns_conflict`.
 - **Reproducibility:** Reproduced on two separately created orders.
-- **Affected test:** `test_approved_order_lifecycle_and_repeat_cancel_conflict`.
+- **Affected test:** `test_repeated_order_cancellation_returns_conflict`.
 
 ## TM-DEF-004: Catalog search is case-sensitive
 

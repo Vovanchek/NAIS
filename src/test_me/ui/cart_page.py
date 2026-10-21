@@ -53,7 +53,22 @@ class CartPage(BasePage):
         return parse_uah(self.visible_text(self._TOTAL))
 
     def wait_for_total_cents(self, expected: int) -> None:
-        self.wait.until(lambda _driver: self.total_cents() == expected)
+        def total_matches(driver) -> bool:
+            text = driver.find_element(*self._TOTAL).text
+            return parse_uah(text) == expected
+
+        self.wait.until(total_matches)
+
+    def coupon_value(self) -> str:
+        field = self.wait.until(EC.visibility_of_element_located(self._COUPON))
+        return field.get_attribute("value") or ""
+
+    def place_order_and_wait_for_error(self) -> str:
+        self.click(self._PLACE_ORDER)
+        return self.checkout_error()
+
+    def dialog_text(self) -> str:
+        return self.visible_text(self._DIALOG)
 
     def checkout_error(self) -> str:
         return self.visible_text(self._ERROR)

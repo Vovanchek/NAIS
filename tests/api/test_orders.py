@@ -28,7 +28,18 @@ def test_approved_order_lifecycle_and_repeat_cancel_conflict(
         {key: payload[key] for key in ("items", "coupon", "delivery")}
     )
     assert_status(quote_response, 200, "Pre-checkout quote")
-    expected_totals = quote_response.json()
+    expected_totals = {
+        "subtotal": available_product.price,
+        "discount": available_product.price * 10 // 100,
+        "shipping": 0 if available_product.price >= 150_000 else 8_000,
+        "currency": "UAH",
+    }
+    expected_totals["total"] = (
+        expected_totals["subtotal"]
+        - expected_totals["discount"]
+        + expected_totals["shipping"]
+    )
+    assert quote_response.json() == expected_totals
 
     created = api.create_order(payload)
     assert_status(created, 201, "Create approved order")
@@ -51,6 +62,23 @@ def test_approved_order_lifecycle_and_repeat_cancel_conflict(
     canceled = api.cancel_order(order_id)
     assert_status(canceled, 200, f"Cancel order {order_id}")
     assert canceled.json()["status"] == "cancelled"
+
+
+@pytest.mark.api
+@pytest.mark.regression
+@pytest.mark.known_defect
+@pytest.mark.xfail(
+    strict=True, reason="TM-DEF-003: repeat cancellation returns success"
+)
+def test_repeated_order_cancellation_returns_conflict(
+    api: ApiClient, available_product: Product
+) -> None:
+    created = api.create_order(checkout_payload(available_product))
+    assert_status(created, 201, "Create order for repeat-cancel check")
+    order_id = created.json()["id"]
+
+    canceled = api.cancel_order(order_id)
+    assert_status(canceled, 200, "Cancel order first time")
 
     repeated_cancel = api.cancel_order(order_id)
     assert_status(repeated_cancel, 409, "Repeated order cancellation")

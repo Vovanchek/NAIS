@@ -33,6 +33,7 @@ markers = [
     "regression: regression coverage for confirmed behavior",
     "negative: invalid input and error behavior",
     "serial: avoid parallel execution for this test",
+    "known_defect: confirmed product defect linked from docs/defects.md",
 ]
 
 [tool.ruff]
