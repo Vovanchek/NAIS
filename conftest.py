@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import os
+import time
 from collections.abc import Generator
 from contextlib import suppress
 from datetime import UTC, datetime
@@ -20,10 +22,30 @@ from test_me.utils.artifacts import (
 )
 from test_me.utils.masking import mask_token, redact_sensitive_text
 
+_ui_test_seen = False
+
 
 @pytest.fixture
 def settings() -> Settings:
     return Settings.from_env()
+
+
+def pytest_sessionstart(session: pytest.Session) -> None:
+    global _ui_test_seen
+    _ui_test_seen = False
+
+
+def pytest_runtest_setup(item: pytest.Item) -> None:
+    global _ui_test_seen
+    if "ui" not in item.keywords:
+        return
+
+    if _ui_test_seen:
+        delay = float(os.getenv("UI_TEST_DELAY_SECONDS", "15"))
+        if delay < 0:
+            raise ValueError("UI_TEST_DELAY_SECONDS must be non-negative")
+        time.sleep(delay)
+    _ui_test_seen = True
 
 
 @pytest.fixture
