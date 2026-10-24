@@ -53,9 +53,11 @@ HEADLESS=true
 API_CONNECT_TIMEOUT=5
 API_READ_TIMEOUT=20
 ARTIFACT_DIR=artifacts
+UI_TEST_DELAY_SECONDS=15
 ```
 
 The configuration rejects non-HTTPS URLs, unexpected hosts, credentials in URLs, query strings, fragments and non-root paths.
+UI tests wait this many seconds before each UI test after the first one in the same run.
 
 ## Quality gates
 
