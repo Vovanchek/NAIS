@@ -38,6 +38,8 @@ Each business-facing automated test has one stable test case ID, one primary Git
 | TM-UI-CHECKOUT-001 | Approved checkout creates one confirmed order with independently calculated totals, persists after reload, and clears the cart. | P0 / UI smoke regression | `tests/ui/test_checkout.py::test_checkout_applies_coupon_persists_order_and_clears_cart` | #21 |
 | TM-UI-CHECKOUT-002 | Synchronous double submission creates exactly one order. | P1 / UI regression | `tests/ui/test_checkout.py::test_double_submit_guard_creates_only_one_order` | #23 |
 | TM-UI-CHECKOUT-003 | Declined payment displays an error, creates no order, and preserves the cart. | P0 / negative UI regression | `tests/ui/test_checkout.py::test_declined_payment_keeps_cart_and_does_not_create_order` | #41 |
+| TM-UI-CHECKOUT-004 | Approved checkout with express delivery creates one confirmed order, applies express shipping total, and persists after reload. | P0 / UI regression | `tests/ui/test_checkout_additional_e2e.py::test_checkout_express_delivery_creates_confirmed_order` | #42 |
+| TM-UI-CHECKOUT-005 | Checkout with a tampered invalid payment value displays an error, creates no order, and keeps cart contents. | P0 / negative UI regression | `tests/ui/test_checkout_additional_e2e.py::test_checkout_rejects_invalid_payment_value_without_creating_order` | #43 |
 | TM-UI-FAVORITES-001 | A dynamically selected catalog product's favorite state toggles, persists after reload, then toggles off. | P1 / UI regression | `tests/ui/test_favorites.py::test_favorite_toggle_persists_after_reload` | #24 |
 
 Framework unit tests do not have business test-case Issues; see the separate **Framework self-tests** section in [`traceability.md`](traceability.md).

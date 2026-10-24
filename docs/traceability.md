@@ -38,6 +38,8 @@ Every business-facing automated test maps one-to-one to a stable test case ID an
 | `TM-UI-CHECKOUT-001` | Approved checkout, persistence, and cart clear | P0 | UI smoke regression | #21 | `tests/ui/test_checkout.py::test_checkout_applies_coupon_persists_order_and_clears_cart` | Automated | — |
 | `TM-UI-CHECKOUT-002` | Double-submit protection | P1 | UI regression | #23 | `tests/ui/test_checkout.py::test_double_submit_guard_creates_only_one_order` | Automated | — |
 | `TM-UI-CHECKOUT-003` | Declined payment retains cart and creates no order | P0 | UI negative regression | #41 | `tests/ui/test_checkout.py::test_declined_payment_keeps_cart_and_does_not_create_order` | Automated | — |
+| `TM-UI-CHECKOUT-004` | Approved checkout with express delivery, expected total, and reload persistence | P0 | UI regression | #42 | `tests/ui/test_checkout_additional_e2e.py::test_checkout_express_delivery_creates_confirmed_order` | Automated | — |
+| `TM-UI-CHECKOUT-005` | Invalid tampered payment value shows error, creates no order, and keeps cart items | P0 | UI negative regression | #43 | `tests/ui/test_checkout_additional_e2e.py::test_checkout_rejects_invalid_payment_value_without_creating_order` | Automated | — |
 | `TM-UI-FAVORITES-001` | Favorite toggle and reload persistence | P1 | UI regression | #24 | `tests/ui/test_favorites.py::test_favorite_toggle_persists_after_reload` | Automated | — |
 
 ## Known-defect links
