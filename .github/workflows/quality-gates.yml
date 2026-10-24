@@ -51,3 +51,21 @@ jobs:
         env:
           BASE_URL: https://test-me.vzl.one
         run: python -m pytest -m known_defect -q
+
+  all-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: [static-and-unit, api]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install project
+        run: python -m pip install -c constraints.txt -e ".[dev]"
+      - name: Run full test suite
+        env:
+          BASE_URL: https://test-me.vzl.one
+          HEADLESS: "true"
+        run: python -m pytest -q

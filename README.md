@@ -124,9 +124,9 @@ Artifact collection is best-effort and cannot replace the original test exceptio
 
 ## CI
 
-`.github/workflows/quality-gates.yml` runs formatting, lint, collection, unit tests and the green API release gate. Known-defect checks run separately and do not hide first-attempt results.
+`.github/workflows/quality-gates.yml` runs formatting, lint, collection, unit tests, the green API release gate, known-defect checks, and a full `pytest -q` run (including UI).
 
-UI execution is intentionally not a blocking pull-request job because the public browser environment may be unavailable or rate limited. Run UI smoke locally and record the result in `docs/execution-report.md`.
+Because the public browser environment may be unavailable or rate limited, still run UI smoke locally and record the result in `docs/execution-report.md` if a CI UI failure needs confirmation.
 
 ## Repository hygiene
 
